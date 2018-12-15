@@ -3,4 +3,5 @@
     <string name="title_book_detail">Book Detail</string>
     <string name="book_detail_cover_image">Book Cover Image</string>
     <string name="book_detail_description">Description</string>
+    <string name="search_no_results">No results. Please try with different search terms.</string>
 </resources>

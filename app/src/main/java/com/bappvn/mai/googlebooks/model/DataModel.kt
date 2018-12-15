@@ -1,5 +1,6 @@
 package com.bappvn.mai.googlebooks.model
 
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.net.URL
 
@@ -17,4 +18,7 @@ data class VolumeInformation(val title: String,
 
 data class Volume(val id: String, val volumeInfo: VolumeInformation): Serializable
 
-data class VolumeList(val totalItems: Int, val items: List<Volume>)
+data class VolumeList(val _totalItems: Int, @SerializedName("items") private val _items: List<Volume>? = emptyList()) {
+    val items
+        get() = _items ?: emptyList()
+}

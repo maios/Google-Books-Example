@@ -100,6 +100,7 @@ class BookListActivity : AppCompatActivity() {
             else -> emptyList()
         }
         book_list.adapter = SimpleItemRecyclerViewAdapter(this, books, twoPane)
+        empty_view.visibility = if (books.isEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun setupViewModel() {

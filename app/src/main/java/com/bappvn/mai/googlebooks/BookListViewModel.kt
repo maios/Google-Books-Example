@@ -6,6 +6,7 @@ import com.bappvn.mai.googlebooks.model.VolumeList
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.gson.responseObject
+import com.github.kittinunf.result.getOrElse
 
 interface BookSearch {
     fun search(term: String)
@@ -25,7 +26,7 @@ class BookListViewModel(val fuelManager: FuelManager = FuelManager.instance): Vi
     override fun search(term: String) {
         Fuel.get("/volumes", parameters = listOf("q" to term))
             .responseObject<VolumeList> { _, _, result ->
-                bookList.value = result.get()
+                bookList.value = result.getOrElse(VolumeList(0, emptyList()))
             }
     }
 }
