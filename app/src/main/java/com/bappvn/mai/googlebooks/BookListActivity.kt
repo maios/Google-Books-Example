@@ -1,6 +1,10 @@
 package com.bappvn.mai.googlebooks
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
@@ -9,13 +13,21 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.SearchView
 import android.widget.TextView
 
-import com.bappvn.mai.googlebooks.dummy.DummyContent
+import com.bappvn.mai.googlebooks.model.Volume
+import com.bappvn.mai.googlebooks.model.VolumeList
+import com.bumptech.glide.annotation.GlideModule
+import com.bumptech.glide.module.AppGlideModule
 import kotlinx.android.synthetic.main.activity_book_list.*
 import kotlinx.android.synthetic.main.book_list_content.view.*
 import kotlinx.android.synthetic.main.book_list.*
+
+
+@GlideModule
+class MyAppGlideModule: AppGlideModule()
 
 /**
  * An activity representing a list of Pings. This activity
@@ -27,6 +39,7 @@ import kotlinx.android.synthetic.main.book_list.*
  */
 class BookListActivity : AppCompatActivity() {
 
+    private lateinit var viewModel: BookListViewModel
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -53,7 +66,7 @@ class BookListActivity : AppCompatActivity() {
             twoPane = true
         }
 
-        setupRecyclerView(book_list)
+        setupViewModel()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -66,20 +79,35 @@ class BookListActivity : AppCompatActivity() {
                 }
 
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    return true
+                    if (query != null) {
+                        viewModel.search(query)
+                    }
+                    return false
                 }
             })
         }
         return true
     }
 
-    private fun setupRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.adapter = SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, twoPane)
+    private val onBookSearchObserver = Observer<VolumeList> { results ->
+        val books: List<Volume>
+        if (results != null) {
+            books = results.items
+        } else {
+            books = emptyList()
+        }
+        book_list.adapter = SimpleItemRecyclerViewAdapter(this, books, twoPane)
+    }
+
+    private fun setupViewModel() {
+        viewModel = ViewModelProviders.of(this).get(BookListViewModel::class.java)
+
+        viewModel.bookList.observe(this, onBookSearchObserver)
     }
 
     class SimpleItemRecyclerViewAdapter(
         private val parentActivity: BookListActivity,
-        private val values: List<DummyContent.DummyItem>,
+        private val books: List<Volume>,
         private val twoPane: Boolean
     ) :
         RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
@@ -88,11 +116,11 @@ class BookListActivity : AppCompatActivity() {
 
         init {
             onClickListener = View.OnClickListener { v ->
-                val item = v.tag as DummyContent.DummyItem
+                val item = v.tag as Volume
                 if (twoPane) {
                     val fragment = BookDetailFragment().apply {
                         arguments = Bundle().apply {
-                            putString(BookDetailFragment.ARG_ITEM_ID, item.id)
+                            putSerializable(BookDetailFragment.ARG_ITEM, item)
                         }
                     }
                     parentActivity.supportFragmentManager
@@ -101,7 +129,7 @@ class BookListActivity : AppCompatActivity() {
                         .commit()
                 } else {
                     val intent = Intent(v.context, BookDetailActivity::class.java).apply {
-                        putExtra(BookDetailFragment.ARG_ITEM_ID, item.id)
+                        putExtra(BookDetailFragment.ARG_ITEM, item)
                     }
                     v.context.startActivity(intent)
                 }
@@ -115,9 +143,14 @@ class BookListActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = values[position]
-            holder.idView.text = item.id
-            holder.contentView.text = item.content
+            val item = books[position]
+            holder.titleTextView.text = item.volumeInfo.title
+            holder.subtitleTextView.text = item.volumeInfo.subtitle
+            GlideApp
+                .with(parentActivity)
+                .load(item.volumeInfo.imageLinks.thumbnail.toString())
+                .placeholder(ColorDrawable(Color.BLACK))
+                .into(holder.thumbnailImageView)
 
             with(holder.itemView) {
                 tag = item
@@ -125,11 +158,12 @@ class BookListActivity : AppCompatActivity() {
             }
         }
 
-        override fun getItemCount() = values.size
+        override fun getItemCount() = books.size
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val idView: TextView = view.id_text
-            val contentView: TextView = view.content
+            val titleTextView: TextView = view.book_title
+            val subtitleTextView: TextView = view.book_subtitle
+            val thumbnailImageView: ImageView = view.book_thumbnail_image
         }
     }
 }

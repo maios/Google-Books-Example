@@ -5,7 +5,7 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.bappvn.mai.googlebooks.dummy.DummyContent
+import com.bappvn.mai.googlebooks.model.Volume
 import kotlinx.android.synthetic.main.activity_book_detail.*
 import kotlinx.android.synthetic.main.book_detail.view.*
 
@@ -17,21 +17,15 @@ import kotlinx.android.synthetic.main.book_detail.view.*
  */
 class BookDetailFragment : Fragment() {
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private var item: DummyContent.DummyItem? = null
+    private var book: Volume? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            if (it.containsKey(ARG_ITEM_ID)) {
-                // Load the dummy content specified by the fragment
-                // arguments. In a real-world scenario, use a Loader
-                // to load content from a content provider.
-                item = DummyContent.ITEM_MAP[it.getString(ARG_ITEM_ID)]
-                activity?.toolbar_layout?.title = item?.content
+            if (it.containsKey(ARG_ITEM)) {
+                book = it.getSerializable(ARG_ITEM) as Volume
+                activity?.toolbar_layout?.title = book?.volumeInfo?.title
             }
         }
     }
@@ -41,10 +35,14 @@ class BookDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.book_detail, container, false)
-
-        // Show the dummy content as text in a TextView.
-        item?.let {
-            rootView.book_detail.text = it.details
+        book?.let {
+            rootView.book_title.text = it.volumeInfo.title
+            rootView.book_detail_author.text = it.volumeInfo.authors.joinToString(", ")
+            rootView.book_description.text = it.volumeInfo.description
+            GlideApp
+                .with(this)
+                .load(it.volumeInfo.imageLinks.thumbnail.toString())
+                .into(rootView.cover_image)
         }
 
         return rootView
@@ -52,9 +50,9 @@ class BookDetailFragment : Fragment() {
 
     companion object {
         /**
-         * The fragment argument representing the item ID that this fragment
+         * The fragment argument representing the item that this fragment
          * represents.
          */
-        const val ARG_ITEM_ID = "item_id"
+        const val ARG_ITEM = "item"
     }
 }

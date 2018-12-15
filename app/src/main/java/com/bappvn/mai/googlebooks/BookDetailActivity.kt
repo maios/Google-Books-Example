@@ -43,10 +43,7 @@ class BookDetailActivity : AppCompatActivity() {
             // using a fragment transaction.
             val fragment = BookDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putString(
-                        BookDetailFragment.ARG_ITEM_ID,
-                        intent.getStringExtra(BookDetailFragment.ARG_ITEM_ID)
-                    )
+                    putSerializable(BookDetailFragment.ARG_ITEM, intent.getSerializableExtra(BookDetailFragment.ARG_ITEM))
                 }
             }
 
