@@ -53,11 +53,6 @@ class BookListActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         toolbar.title = title
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
-
         if (book_detail_container != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
@@ -80,6 +75,9 @@ class BookListActivity : AppCompatActivity() {
 
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     if (query != null) {
+                        book_list.adapter = SimpleItemRecyclerViewAdapter(this@BookListActivity, emptyList(), twoPane)
+                        shimmer_view_container.startShimmer()
+                        shimmer_view_container.visibility = View.VISIBLE
                         viewModel.search(query)
                     }
                     return false
@@ -89,19 +87,23 @@ class BookListActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onStart() {
+        super.onStart()
+        shimmer_view_container.visibility = View.INVISIBLE
+    }
+
     private val onBookSearchObserver = Observer<VolumeList> { results ->
-        val books: List<Volume>
-        if (results != null) {
-            books = results.items
-        } else {
-            books = emptyList()
+        shimmer_view_container.stopShimmer()
+        shimmer_view_container.visibility = View.INVISIBLE
+        val books: List<Volume> = when(results) {
+            checkNotNull(results) -> results.items
+            else -> emptyList()
         }
         book_list.adapter = SimpleItemRecyclerViewAdapter(this, books, twoPane)
     }
 
     private fun setupViewModel() {
         viewModel = ViewModelProviders.of(this).get(BookListViewModel::class.java)
-
         viewModel.bookList.observe(this, onBookSearchObserver)
     }
 
