@@ -24,7 +24,7 @@ class BookListViewModel(val fuelManager: FuelManager = FuelManager.instance): Vi
     }
 
     override fun search(term: String) {
-        Fuel.get("/volumes", parameters = listOf("q" to term))
+        Fuel.get("/volumes", parameters = listOf("q" to term, "maxResults" to 40))
             .responseObject<VolumeList> { _, _, result ->
                 bookList.value = result.getOrElse(VolumeList(0, emptyList()))
             }

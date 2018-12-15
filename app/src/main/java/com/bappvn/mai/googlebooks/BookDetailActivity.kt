@@ -1,12 +1,15 @@
 package com.bappvn.mai.googlebooks
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v4.app.NavUtils
 import android.view.MenuItem
+import com.bappvn.mai.googlebooks.model.Volume
 import kotlinx.android.synthetic.main.activity_book_detail.*
+import java.net.URI
 
 /**
  * An activity representing a single Book detail screen. This
@@ -16,15 +19,14 @@ import kotlinx.android.synthetic.main.activity_book_detail.*
  */
 class BookDetailActivity : AppCompatActivity() {
 
+    private lateinit var book: Volume
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_book_detail)
         setSupportActionBar(detail_toolbar)
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
+        book = intent.getSerializableExtra(BookDetailFragment.ARG_ITEM) as Volume
 
         // Show the Up button in the action bar.
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -43,7 +45,7 @@ class BookDetailActivity : AppCompatActivity() {
             // using a fragment transaction.
             val fragment = BookDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(BookDetailFragment.ARG_ITEM, intent.getSerializableExtra(BookDetailFragment.ARG_ITEM))
+                    putSerializable(BookDetailFragment.ARG_ITEM, book)
                 }
             }
 

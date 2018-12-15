@@ -1,5 +1,7 @@
 package com.bappvn.mai.googlebooks
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -35,14 +37,23 @@ class BookDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.book_detail, container, false)
-        book?.let {
-            rootView.book_title.text = it.volumeInfo.title
-            rootView.book_detail_author.text = it.volumeInfo.authors.joinToString(", ")
-            rootView.book_description.text = it.volumeInfo.description
+        book?.let { volume ->
+            rootView.book_title.text = volume.volumeInfo.title
+            rootView.book_detail_author.text = volume.volumeInfo.authors.joinToString(", ")
+            rootView.book_description.text = volume.volumeInfo.description
             GlideApp
                 .with(this)
-                .load(it.volumeInfo.imageLinks.thumbnail.toString())
+                .load(volume.volumeInfo.imageLinks?.thumbnail?.toString())
                 .into(rootView.cover_image)
+
+            rootView.buy_button.setOnClickListener {
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(volume.saleInfo.buyLink.toString())
+                    )
+                )
+            }
         }
 
         return rootView

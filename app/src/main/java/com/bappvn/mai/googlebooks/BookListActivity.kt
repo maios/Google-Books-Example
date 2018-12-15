@@ -76,6 +76,7 @@ class BookListActivity : AppCompatActivity() {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     if (query != null) {
                         book_list.adapter = SimpleItemRecyclerViewAdapter(this@BookListActivity, emptyList(), twoPane)
+                        empty_view.visibility = View.GONE
                         shimmer_view_container.startShimmer()
                         shimmer_view_container.visibility = View.VISIBLE
                         viewModel.search(query)
@@ -149,9 +150,10 @@ class BookListActivity : AppCompatActivity() {
             val item = books[position]
             holder.titleTextView.text = item.volumeInfo.title
             holder.subtitleTextView.text = item.volumeInfo.subtitle
+
             GlideApp
                 .with(parentActivity)
-                .load(item.volumeInfo.imageLinks.thumbnail.toString())
+                .load(item.volumeInfo.imageLinks?.thumbnail?.toString())
                 .placeholder(ColorDrawable(Color.BLACK))
                 .into(holder.thumbnailImageView)
 
